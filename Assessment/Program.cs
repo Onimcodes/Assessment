@@ -3,9 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Assessment.Interfaces;
+using Assessment.Services;
 
-
-
+public enum FileSourceType
+{
+    Local,
+    AzureBlob,
+    GoogleDrive,
+    S3, // AWS S3 or other sources can be added here
+    Http
+}
 
  internal class Program
 {
@@ -14,8 +22,9 @@ using System.Threading.Tasks;
         //First Test
         
         string folderPath = "C:\\Users\\User\\Music";
-        string searchString = "a";
-        await FileScanner.ScanFilesAsync(folderPath, searchString);
+        string searchString = "Alab";
+        //Test Local system
+        await FileScanner.ScanFilesAsync(FileSourceType.Local, searchString:searchString, folderPath);
 
 
         //Second Test
@@ -40,56 +49,74 @@ public static class FileScanner
    
 
 
-    public static async Task ScanFilesAsync(string folderPath, string searchString)
+    //public static async Task ScanFilesAsync(string folderPath, string searchString)
+    //{
+    //    if (string.IsNullOrWhiteSpace(folderPath))
+    //        throw new ArgumentException("Folder path cannot be null or empty.", nameof(folderPath));
+
+    //    if (string.IsNullOrWhiteSpace(searchString))
+    //        throw new ArgumentException("Search string cannot be null or empty.", nameof(searchString));
+
+    //    if (!Directory.Exists(folderPath))
+    //    {
+    //        Console.WriteLine($"The folder '{folderPath}' does not exist.");
+    //        return;
+    //    }
+
+    //    string[] files = Directory.GetFiles(folderPath);
+
+    //    foreach (var file in files)
+    //    {
+    //        try
+    //        {
+    //            using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true))
+    //            using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
+    //            {
+    //                char[] buffer = new char[8192];
+    //                int bytesRead;
+    //                bool isPresent = false;
+
+    //                while ((bytesRead = await reader.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    //                {
+    //                    string content = new string(buffer, 0, bytesRead);
+    //                    if (content.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+    //                    {
+    //                        isPresent = true;
+    //                        break;
+    //                    }
+    //                }
+
+    //                Console.WriteLine(isPresent
+    //                    ? $"Present: {Path.GetFileName(file)}"
+    //                    : $"Absent: {Path.GetFileName(file)}");
+    //            }
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            Console.WriteLine($"Error reading file '{file}': {ex.Message}");
+    //        }
+    //    }
+    //}
+
+    public static async Task ScanFilesAsync(FileSourceType sourceType, string searchString, string pathOrConnection = null)
     {
-        if (string.IsNullOrWhiteSpace(folderPath))
-            throw new ArgumentException("Folder path cannot be null or empty.", nameof(folderPath));
+        IFileSource fileSource = FileSourceFactory.CreateFileSource(sourceType, pathOrConnection);
 
-        if (string.IsNullOrWhiteSpace(searchString))
-            throw new ArgumentException("Search string cannot be null or empty.", nameof(searchString));
-
-        if (!Directory.Exists(folderPath))
+        try
         {
-            Console.WriteLine($"The folder '{folderPath}' does not exist.");
-            return;
+            var matchingFiles = await fileSource.GetFilesAsync(pathOrConnection, searchString);
+
+            foreach (var file in matchingFiles)
+            {
+                Console.WriteLine($"{file.Value} --- {file.Key}");
+            }
         }
-
-        string[] files = Directory.GetFiles(folderPath);
-
-        foreach (var file in files)
+        catch (Exception ex)
         {
-            try
-            {
-                using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true))
-                using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
-                {
-                    char[] buffer = new char[8192];
-                    int bytesRead;
-                    bool isPresent = false;
-
-                    while ((bytesRead = await reader.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                    {
-                        string content = new string(buffer, 0, bytesRead);
-                        if (content.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                        {
-                            isPresent = true;
-                            break;
-                        }
-                    }
-
-                    Console.WriteLine(isPresent
-                        ? $"Present: {Path.GetFileName(file)}"
-                        : $"Absent: {Path.GetFileName(file)}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file '{file}': {ex.Message}");
-            }
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
-  
 }
 
 
@@ -112,4 +139,7 @@ public static class DuplicateIdentifier<T> where T : IEquatable<T>
 
         return results;
     }
+
+   
 }
+
