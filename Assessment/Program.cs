@@ -13,8 +13,8 @@ using System.Threading.Tasks;
     {
         //First Test
         
-        string folderPath = "C:\\Users";
-        string searchString = "user";
+        string folderPath = "C:\\Users\\User\\Music";
+        string searchString = "a";
         await FileScanner.ScanFilesAsync(folderPath, searchString);
 
 
