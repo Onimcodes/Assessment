@@ -47,57 +47,6 @@ public enum FileSourceType
 public static class FileScanner
 {
    
-
-
-    //public static async Task ScanFilesAsync(string folderPath, string searchString)
-    //{
-    //    if (string.IsNullOrWhiteSpace(folderPath))
-    //        throw new ArgumentException("Folder path cannot be null or empty.", nameof(folderPath));
-
-    //    if (string.IsNullOrWhiteSpace(searchString))
-    //        throw new ArgumentException("Search string cannot be null or empty.", nameof(searchString));
-
-    //    if (!Directory.Exists(folderPath))
-    //    {
-    //        Console.WriteLine($"The folder '{folderPath}' does not exist.");
-    //        return;
-    //    }
-
-    //    string[] files = Directory.GetFiles(folderPath);
-
-    //    foreach (var file in files)
-    //    {
-    //        try
-    //        {
-    //            using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true))
-    //            using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
-    //            {
-    //                char[] buffer = new char[8192];
-    //                int bytesRead;
-    //                bool isPresent = false;
-
-    //                while ((bytesRead = await reader.ReadAsync(buffer, 0, buffer.Length)) > 0)
-    //                {
-    //                    string content = new string(buffer, 0, bytesRead);
-    //                    if (content.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-    //                    {
-    //                        isPresent = true;
-    //                        break;
-    //                    }
-    //                }
-
-    //                Console.WriteLine(isPresent
-    //                    ? $"Present: {Path.GetFileName(file)}"
-    //                    : $"Absent: {Path.GetFileName(file)}");
-    //            }
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            Console.WriteLine($"Error reading file '{file}': {ex.Message}");
-    //        }
-    //    }
-    //}
-
     public static async Task ScanFilesAsync(FileSourceType sourceType, string searchString, string pathOrConnection = null)
     {
         IFileSource fileSource = FileSourceFactory.CreateFileSource(sourceType, pathOrConnection);
